@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/okpalaChidiebere/go-grpc/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -36,4 +37,10 @@ func main() {
 		log.Fatalf("could not Create Todo: %v", err)
 	}
 	log.Printf("New Todo: %s", r.GetTodo())
+
+	rtr, err := c.ReadTodos(ctx, &empty.Empty{})
+	if err != nil {
+		log.Fatalf("could not Create Todo: %v", err)
+	}
+	log.Printf("Read the todos from server: %s", rtr.String())
 }

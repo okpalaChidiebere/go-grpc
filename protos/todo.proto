@@ -4,10 +4,14 @@ package todo;
 
 option go_package = "github.com/okpalaChidiebere/go-grpc;go_grpc";
 
+import "google/protobuf/empty.proto";
+
 // The Todo service definition.
 service TodoService {
   // Creates a single Todo
   rpc CreateTodo (CreateTodoRequest) returns (CreateTodoResponse);
+  // Get all the created Todos. Takes in no or empty request as argument
+  rpc ReadTodos (google.protobuf.Empty) returns (ReadTodosResponse);
 }
 
 // The Todo Data
@@ -24,4 +28,8 @@ message CreateTodoRequest {
 // The response message containing the TodoItem
 message CreateTodoResponse {
   TodoItem todo  = 1;
+}
+
+message ReadTodosResponse {
+ repeated TodoItem Items  = 1; //An array of Todos Data
 }

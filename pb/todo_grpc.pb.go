@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -24,6 +25,8 @@ const _ = grpc.SupportPackageIsVersion7
 type TodoServiceClient interface {
 	// Creates a single Todo
 	CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*CreateTodoResponse, error)
+	// Get all the created Todos. Takes in no or empty request as argument
+	ReadTodos(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ReadTodosResponse, error)
 }
 
 type todoServiceClient struct {
@@ -43,12 +46,23 @@ func (c *todoServiceClient) CreateTodo(ctx context.Context, in *CreateTodoReques
 	return out, nil
 }
 
+func (c *todoServiceClient) ReadTodos(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ReadTodosResponse, error) {
+	out := new(ReadTodosResponse)
+	err := c.cc.Invoke(ctx, "/todo.TodoService/ReadTodos", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TodoServiceServer is the server API for TodoService service.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility
 type TodoServiceServer interface {
 	// Creates a single Todo
 	CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error)
+	// Get all the created Todos. Takes in no or empty request as argument
+	ReadTodos(context.Context, *emptypb.Empty) (*ReadTodosResponse, error)
 	mustEmbedUnimplementedTodoServiceServer()
 }
 
@@ -58,6 +72,9 @@ type UnimplementedTodoServiceServer struct {
 
 func (UnimplementedTodoServiceServer) CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateTodo not implemented")
+}
+func (UnimplementedTodoServiceServer) ReadTodos(context.Context, *emptypb.Empty) (*ReadTodosResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReadTodos not implemented")
 }
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 
@@ -90,6 +107,24 @@ func _TodoService_CreateTodo_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_ReadTodos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TodoServiceServer).ReadTodos(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/todo.TodoService/ReadTodos",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TodoServiceServer).ReadTodos(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -100,6 +135,10 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateTodo",
 			Handler:    _TodoService_CreateTodo_Handler,
+		},
+		{
+			MethodName: "ReadTodos",
+			Handler:    _TodoService_ReadTodos_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

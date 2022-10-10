@@ -10,6 +10,7 @@ import (
 
 type Repository interface {
 	Create(t string) (models.Todo)
+	GetMulti() ([]models.Todo)
 }
 
 type TodosListDataRepository struct {
@@ -31,6 +32,10 @@ func (r *TodosListDataRepository) Create(t string) (models.Todo){
 	} 
 	r.todos = append(r.todos, todoItem)
 	return todoItem
+}
+
+func (r *TodosListDataRepository) GetMulti() ([]models.Todo) {
+	return r.todos
 }
 
 

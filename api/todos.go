@@ -8,6 +8,7 @@ import (
 	apiadapters "github.com/okpalaChidiebere/go-grpc/api/adapters"
 	todos "github.com/okpalaChidiebere/go-grpc/businessLogic/todos"
 	pb "github.com/okpalaChidiebere/go-grpc/pb"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // TodoServer is used to implement todos.TodoServiceServer interface. It's a MUST
@@ -28,4 +29,9 @@ func (s *TodoServer) CreateTodo(ctx context.Context, in *pb.CreateTodoRequest) (
 	log.Printf("Received todo: %v", in.GetText())
 	todo := s.TodoService.Create(in.GetText())
 	return &pb.CreateTodoResponse{Todo: apiadapters.TodoToProto(&todo) } , nil
+}
+
+func (s *TodoServer) ReadTodos(ctx context.Context, in *emptypb.Empty) (*pb.ReadTodosResponse, error) {
+	todos := apiadapters.TodosToProto(s.TodoService.ReadTodos())
+	return &pb.ReadTodosResponse{ Items: todos } , nil
 }

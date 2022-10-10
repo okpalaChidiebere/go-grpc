@@ -12,3 +12,14 @@ func TodoToProto (t *models.Todo) *pb.TodoItem{
 		Text: t.Text,
 	}
 }
+
+func TodosToProto (ts []models.Todo) []*pb.TodoItem{
+	var todos []*pb.TodoItem
+	for _, t := range ts {
+		todos = append(todos, &pb.TodoItem{
+			Id: t.Id,
+			Text: t.Text,
+		})
+	}
+	return todos
+}
