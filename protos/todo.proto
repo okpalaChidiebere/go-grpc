@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package todo;
+
+option go_package = "github.com/okpalaChidiebere/go-grpc;go_grpc";
+
+// The Todo service definition.
+service TodoService {
+  // Creates a single Todo
+  rpc CreateTodo (CreateTodoRequest) returns (CreateTodoResponse);
+}
+
+// The Todo Data
+message TodoItem{
+  string Id = 1;
+  string Text = 2;
+}
+
+// The request message containing the Todo text
+message CreateTodoRequest {
+  string Text = 1;
+}
+
+// The response message containing the TodoItem
+message CreateTodoResponse {
+  TodoItem todo  = 1;
+}
