@@ -12,6 +12,9 @@ service TodoService {
   rpc CreateTodo (CreateTodoRequest) returns (CreateTodoResponse);
   // Get all the created Todos. Takes in no or empty request as argument
   rpc ReadTodos (google.protobuf.Empty) returns (ReadTodosResponse);
+  //This method will stream back the list of todos back to the user
+  //This is better than sending all the list at once back to the user
+  rpc ReadTodosStream(google.protobuf.Empty) returns (stream TodoItem);
 }
 
 // The Todo Data

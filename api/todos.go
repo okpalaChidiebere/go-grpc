@@ -35,3 +35,12 @@ func (s *TodoServer) ReadTodos(ctx context.Context, in *emptypb.Empty) (*pb.Read
 	todos := apiadapters.TodosToProto(s.TodoService.ReadTodos())
 	return &pb.ReadTodosResponse{ Items: todos } , nil
 }
+
+func (s *TodoServer) ReadTodosStream(req *emptypb.Empty, stream pb.TodoService_ReadTodosStreamServer) error{
+	for _, todo := range s.TodoService.ReadTodos(){
+		if err := stream.Send(apiadapters.TodoToProto(&todo)); err != nil {
+            log.Fatalf("%v.Send(%v) = %v: ", stream, todo, err)
+        }
+	}
+	return nil
+}

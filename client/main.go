@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"io"
 	"log"
 	"time"
 
@@ -43,4 +44,20 @@ func main() {
 		log.Fatalf("could not Create Todo: %v", err)
 	}
 	log.Printf("Read the todos from server: %s", rtr.String())
+
+	// The client is reading a stream of data from the server
+	stream, err := c.ReadTodosStream(context.Background(), &empty.Empty{})
+    if err != nil {
+        log.Fatalf("%v.Execute(ctx) = %v, %v: ", c, stream, err)
+    }
+	for {
+		item, err := stream.Recv()
+		if err == io.EOF {
+			log.Printf("Server done!")
+			break
+		} else if err != nil {
+			log.Fatalln("something went wrong with getting items: ", err)
+		}
+		log.Printf("Received item from server: %s", item.String())
+	}
 }

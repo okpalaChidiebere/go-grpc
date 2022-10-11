@@ -27,6 +27,9 @@ type TodoServiceClient interface {
 	CreateTodo(ctx context.Context, in *CreateTodoRequest, opts ...grpc.CallOption) (*CreateTodoResponse, error)
 	// Get all the created Todos. Takes in no or empty request as argument
 	ReadTodos(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ReadTodosResponse, error)
+	//This method will stream back the list of todos back to the user
+	//This is better than sending all the list at once back to the user
+	ReadTodosStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TodoService_ReadTodosStreamClient, error)
 }
 
 type todoServiceClient struct {
@@ -55,6 +58,38 @@ func (c *todoServiceClient) ReadTodos(ctx context.Context, in *emptypb.Empty, op
 	return out, nil
 }
 
+func (c *todoServiceClient) ReadTodosStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TodoService_ReadTodosStreamClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TodoService_ServiceDesc.Streams[0], "/todo.TodoService/ReadTodosStream", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &todoServiceReadTodosStreamClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TodoService_ReadTodosStreamClient interface {
+	Recv() (*TodoItem, error)
+	grpc.ClientStream
+}
+
+type todoServiceReadTodosStreamClient struct {
+	grpc.ClientStream
+}
+
+func (x *todoServiceReadTodosStreamClient) Recv() (*TodoItem, error) {
+	m := new(TodoItem)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // TodoServiceServer is the server API for TodoService service.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility
@@ -63,6 +98,9 @@ type TodoServiceServer interface {
 	CreateTodo(context.Context, *CreateTodoRequest) (*CreateTodoResponse, error)
 	// Get all the created Todos. Takes in no or empty request as argument
 	ReadTodos(context.Context, *emptypb.Empty) (*ReadTodosResponse, error)
+	//This method will stream back the list of todos back to the user
+	//This is better than sending all the list at once back to the user
+	ReadTodosStream(*emptypb.Empty, TodoService_ReadTodosStreamServer) error
 	mustEmbedUnimplementedTodoServiceServer()
 }
 
@@ -75,6 +113,9 @@ func (UnimplementedTodoServiceServer) CreateTodo(context.Context, *CreateTodoReq
 }
 func (UnimplementedTodoServiceServer) ReadTodos(context.Context, *emptypb.Empty) (*ReadTodosResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadTodos not implemented")
+}
+func (UnimplementedTodoServiceServer) ReadTodosStream(*emptypb.Empty, TodoService_ReadTodosStreamServer) error {
+	return status.Errorf(codes.Unimplemented, "method ReadTodosStream not implemented")
 }
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 
@@ -125,6 +166,27 @@ func _TodoService_ReadTodos_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TodoService_ReadTodosStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(emptypb.Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TodoServiceServer).ReadTodosStream(m, &todoServiceReadTodosStreamServer{stream})
+}
+
+type TodoService_ReadTodosStreamServer interface {
+	Send(*TodoItem) error
+	grpc.ServerStream
+}
+
+type todoServiceReadTodosStreamServer struct {
+	grpc.ServerStream
+}
+
+func (x *todoServiceReadTodosStreamServer) Send(m *TodoItem) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -141,6 +203,12 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TodoService_ReadTodos_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ReadTodosStream",
+			Handler:       _TodoService_ReadTodosStream_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "todo.proto",
 }
