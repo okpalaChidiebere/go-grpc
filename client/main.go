@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"io"
 	"log"
+	"os"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -46,7 +48,7 @@ func main() {
 	log.Printf("Read the todos from server: %s", rtr.String())
 
 	// The client is reading a stream of data from the server
-	stream, err := c.ReadTodosStream(context.Background(), &empty.Empty{})
+	stream, err := c.ReadTodosStream(ctx, &empty.Empty{})
     if err != nil {
         log.Fatalf("%v.Execute(ctx) = %v, %v: ", c, stream, err)
     }
@@ -60,4 +62,56 @@ func main() {
 		}
 		log.Printf("Received item from server: %s", item.String())
 	}
+
+	ch := make(chan *pb.AddTodoPhotoResponse)
+	//The Client Sending a stream to the server
+	go func (ch chan *pb.AddTodoPhotoResponse)  {
+		
+
+		stream, err := c.AddPhoto(context.Background())
+		if err != nil {
+			log.Fatalf("%v.Execute(ctx) = %v, %v: ", c, stream, err)
+		}
+
+		stream.Send(&pb.AddTodoPhotoRequest{ Request: &pb.AddTodoPhotoRequest_Info{ Info: &pb.AddTodoPhotoRequest_PhotoInfo{ TodoId: "SomeRandomTodoId"} }})
+
+		f, err := os.Open("Penguins.jpeg")
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer f.Close()
+
+		reader := bufio.NewReader(f)
+		buf := make([]byte, 256)
+
+		for {
+			n, err := reader.Read(buf)
+			if n == 0 {
+				if err == nil {
+					continue
+				}
+				if err == io.EOF {
+					break
+				}
+				log.Fatal(err)
+			}
+
+			// process buf
+			if err != nil && err != io.EOF {
+				log.Fatal(err)
+			}
+			stream.Send(&pb.AddTodoPhotoRequest{ Request: &pb.AddTodoPhotoRequest_Data{ Data: buf }})
+		}
+
+		res, err := stream.CloseAndRecv()
+		if err != nil {
+			log.Fatalf("Error when closing the stream and receiving the response: %v", err)
+		}
+		ch <- res
+	}(ch)
+
+	mRes := <-ch
+	log.Printf("AddPhoto Server Response to client: %s", mRes.String())
 }

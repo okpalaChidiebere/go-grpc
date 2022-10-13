@@ -30,6 +30,7 @@ type TodoServiceClient interface {
 	//This method will stream back the list of todos back to the user
 	//This is better than sending all the list at once back to the user
 	ReadTodosStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TodoService_ReadTodosStreamClient, error)
+	AddPhoto(ctx context.Context, opts ...grpc.CallOption) (TodoService_AddPhotoClient, error)
 }
 
 type todoServiceClient struct {
@@ -90,6 +91,40 @@ func (x *todoServiceReadTodosStreamClient) Recv() (*TodoItem, error) {
 	return m, nil
 }
 
+func (c *todoServiceClient) AddPhoto(ctx context.Context, opts ...grpc.CallOption) (TodoService_AddPhotoClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TodoService_ServiceDesc.Streams[1], "/todo.TodoService/AddPhoto", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &todoServiceAddPhotoClient{stream}
+	return x, nil
+}
+
+type TodoService_AddPhotoClient interface {
+	Send(*AddTodoPhotoRequest) error
+	CloseAndRecv() (*AddTodoPhotoResponse, error)
+	grpc.ClientStream
+}
+
+type todoServiceAddPhotoClient struct {
+	grpc.ClientStream
+}
+
+func (x *todoServiceAddPhotoClient) Send(m *AddTodoPhotoRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *todoServiceAddPhotoClient) CloseAndRecv() (*AddTodoPhotoResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(AddTodoPhotoResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // TodoServiceServer is the server API for TodoService service.
 // All implementations must embed UnimplementedTodoServiceServer
 // for forward compatibility
@@ -101,6 +136,7 @@ type TodoServiceServer interface {
 	//This method will stream back the list of todos back to the user
 	//This is better than sending all the list at once back to the user
 	ReadTodosStream(*emptypb.Empty, TodoService_ReadTodosStreamServer) error
+	AddPhoto(TodoService_AddPhotoServer) error
 	mustEmbedUnimplementedTodoServiceServer()
 }
 
@@ -116,6 +152,9 @@ func (UnimplementedTodoServiceServer) ReadTodos(context.Context, *emptypb.Empty)
 }
 func (UnimplementedTodoServiceServer) ReadTodosStream(*emptypb.Empty, TodoService_ReadTodosStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method ReadTodosStream not implemented")
+}
+func (UnimplementedTodoServiceServer) AddPhoto(TodoService_AddPhotoServer) error {
+	return status.Errorf(codes.Unimplemented, "method AddPhoto not implemented")
 }
 func (UnimplementedTodoServiceServer) mustEmbedUnimplementedTodoServiceServer() {}
 
@@ -187,6 +226,32 @@ func (x *todoServiceReadTodosStreamServer) Send(m *TodoItem) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _TodoService_AddPhoto_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TodoServiceServer).AddPhoto(&todoServiceAddPhotoServer{stream})
+}
+
+type TodoService_AddPhotoServer interface {
+	SendAndClose(*AddTodoPhotoResponse) error
+	Recv() (*AddTodoPhotoRequest, error)
+	grpc.ServerStream
+}
+
+type todoServiceAddPhotoServer struct {
+	grpc.ServerStream
+}
+
+func (x *todoServiceAddPhotoServer) SendAndClose(m *AddTodoPhotoResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *todoServiceAddPhotoServer) Recv() (*AddTodoPhotoRequest, error) {
+	m := new(AddTodoPhotoRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // TodoService_ServiceDesc is the grpc.ServiceDesc for TodoService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -208,6 +273,11 @@ var TodoService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "ReadTodosStream",
 			Handler:       _TodoService_ReadTodosStream_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "AddPhoto",
+			Handler:       _TodoService_AddPhoto_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "todo.proto",

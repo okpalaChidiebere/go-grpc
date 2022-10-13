@@ -29,6 +29,9 @@ func main(){
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	//NOTE: If your repo needs any vendor client as params like dynamoDB, 
+	//awsSecretManager, etc, you initialize them here and inject them into 
+	//the repo
 	todosRepo := todosrepo.NewTodosListDataRepo()
 	todosService := todosservice.New(todosRepo)
 

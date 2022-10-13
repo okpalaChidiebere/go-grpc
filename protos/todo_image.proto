@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package todo;
+
+option go_package = "github.com/okpalaChidiebere/go-grpc;go_grpc";
+
+message AddTodoPhotoRequest {
+    message PhotoInfo {
+        string todo_id = 1;
+    }
+    //The request can be the PhotoInfo or the bytes data for the image or both
+    oneof request {
+        PhotoInfo info = 1;
+        bytes data = 2;
+    }
+}
+
+message AddTodoPhotoResponse {
+    bool success = 1;
+    uint32 size = 2;
+}
