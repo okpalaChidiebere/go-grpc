@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	addr = flag.String("addr", "localhost:9000", "the address to connect to")
+	addr = flag.String("addr", "0.0.0.0:9000", "the address to connect to") //we listen for all IP address on local machine :). You can target only localhost and any external connection if you want. see https://www.howtogeek.com/225487/what-is-the-difference-between-127.0.0.1-and-0.0.0.0/
 	text = flag.String("t", "", "The todo text")
 )
 

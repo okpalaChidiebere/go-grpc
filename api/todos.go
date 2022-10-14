@@ -15,7 +15,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
-const maxImageSie = 1 << 20 //max imageSize of 1MB
+const maxImageSie = 1 << 20 //max imageSize of 1MB. if you want max of 10MB fileSize, you will have 10 << 20
 
 // TodoServer is used to implement todos.TodoServiceServer interface. It's a MUST
 type TodoServer struct {
