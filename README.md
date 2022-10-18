@@ -25,6 +25,34 @@ option java_outer_classname = "TodoImageProto"; //good name convention is ${file
 option java_package = "com.examplecompanyname.path.v1.generated";
 ```
 
+## Environment Configurations
+
+- You need to have go installed in your system
+- You need the Protocol buffer [`protoc`] compiler to able to compile your proto file. In my case i used HomeBrew to install this
+- You need the protocol buffer compiler plugins; one for proto model compiling and one for rpc compiling.
+- You may also need to update your go path
+- See full steps [here](https://grpc.io/docs/languages/go/quickstart/#prerequisites)
+- If i wanted to set up a CI/CD process using Travis CI, so whenever i add a new proto file in a github repo to generate the protos for me on another github repo or on thesame repo i can read [this](https://docs.travis-ci.com/user/installing-dependencies/#installing-packages-on-macos) and [this](https://docs.travis-ci.com/user/installing-dependencies/#installing-projects-from-source)
+
+## VSCode Configurations to edit proto files
+
+- Install proto3 plugin that the ide suggested
+- You may also have to set your IDE (my case was VSCode) to be able to read proto file importing another proto file without errors. In VSCode go to preferences > settings and search for 'proto3' edit the settings.json file add
+
+```json
+{
+  ...
+  "protoc": {
+	"path": "/usr/local/bin/protoc", /*This is optional. You can get this path by running in termial `which protoc`*/
+    "options": ["--proto_path=protos"] /*the path will be the path that your proto file is defined. For this project its called `protos`*/
+  }
+}
+
+```
+
+- If you want auto format of the files like tabs spaces you can install the clang format plugin. Via HomeBrew `brew install clang-format` or regular VSCode install
+- Restart the VSCode! See [Video](https://www.youtube.com/watch?v=3r327rjB8qg)
+
 ## Takeaways on Streaming
 
 - Sometimes you make want to receive streams on the background thread in go and using stream context you can listen on the main thread for whenever the background task is done. See this [video](https://www.youtube.com/watch?v=l_74x_qQZB8) as an example. You can read this [article](https://www.digitalocean.com/community/tutorials/how-to-use-contexts-in-go) about go contexts as well. Read more about concurrency in go [here](https://go.dev/blog/pipelines)

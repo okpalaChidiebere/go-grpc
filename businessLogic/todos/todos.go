@@ -9,7 +9,9 @@ import (
 	"github.com/okpalaChidiebere/go-grpc/models"
 )
 
-/*Other developers might call this Service*/
+// the interface that the API level uses to interact with the Todo model
+//Other developers can call this Service
+//You can choose to have this in a different file like we did in the dataAccess layer
 type Service interface {
 	Create(t string) (models.Todo)
 	ReadTodos() ([]models.Todo)
@@ -20,7 +22,7 @@ type ServiceImpl struct {
 	todosRepo todosRepo.Repository
 }
 
-func New(repo todosRepo.Repository) Service {
+func New(repo todosRepo.Repository) *ServiceImpl {
 	return &ServiceImpl{repo}
 }
 

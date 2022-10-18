@@ -8,11 +8,6 @@ import (
 	"github.com/okpalaChidiebere/go-grpc/models"
 )
 
-type Repository interface {
-	Create(t string) (models.Todo)
-	GetMulti() ([]models.Todo)
-}
-
 type TodosListDataRepository struct {
 	todos []models.Todo
 }
