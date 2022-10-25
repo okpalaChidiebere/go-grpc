@@ -3,16 +3,22 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/okpalaChidiebere/go-grpc/data"
+	"google.golang.org/grpc/credentials"
+
 	pb "github.com/okpalaChidiebere/go-grpc/pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -20,11 +26,35 @@ var (
 	text = flag.String("t", "", "The todo text")
 )
 
+
+func newClientTLSFromFile(certFile, serverNameOverride string) (credentials.TransportCredentials, error) {
+	//Load the certificate of the CA who signed the server's certificate 
+	b, err := ioutil.ReadFile(certFile)
+	if err != nil {
+		return nil, err
+	}
+	cp := x509.NewCertPool()
+	//attempt to verify the authenticity of the certificate we loaded to make sure its the right server
+	if !cp.AppendCertsFromPEM(b) {
+		return nil, fmt.Errorf("credentials: failed to append certificates")
+	}
+	//create credentials and return it
+	return credentials.NewTLS(&tls.Config{ServerName: serverNameOverride, RootCAs: cp}), nil
+}
+
 func main() {
 	
 	flag.Parse()
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+
+	// Create tls based credential.
+	creds, err := newClientTLSFromFile(data.Path("cert/ca_cert.pem"), "x.example.com")
+	if err != nil {
+		log.Fatalf("failed to load credentials: %v", err)
+	}
+
+	/* FYI: You use grpc.WithBlock() when you want to block main thread until connection is made. By default the connection is made in the background thread
+	 Eg Using DialContext() and use a context with timeout to avoid wait a lot on the main thread; then you will need grpc.WithBlock() */
+	conn, err := grpc.Dial(*addr, grpc.WithTransportCredentials(creds)) // Set up a connection to the server.
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

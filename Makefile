@@ -7,6 +7,9 @@ build:
 
 # NOTE: you you have the /pb folder already created
 clean:
-	rm -rf pb/*.pb.*
+	rm -rf pb/*.pb.*\
 
-.PHONY: clean build
+cert:
+	cd data/cert; chmod u+x gen.sh; ./gen.sh; cd ../..
+
+.PHONY: clean build cert

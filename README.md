@@ -60,8 +60,8 @@ option java_package = "com.examplecompanyname.path.v1.generated";
 
 ```go
 
-	// Stream generates values with DoSomething and sends them to out
- // until DoSomething returns an error or ctx.Done from gRPC stream is closed.
+// Stream generates values with DoSomething and sends them to out
+// until DoSomething returns an error or ctx.Done from gRPC stream is closed.
  func Stream(ctx context.Context, out chan<- Value) error {
  	for {
  		v, err := DoSomething(ctx)
@@ -76,6 +76,11 @@ option java_package = "com.examplecompanyname.path.v1.generated";
  	}
  }
 ```
+
+## More to explore in gRPC
+
+- gRPC Interceptor. See example [here](https://github.com/grpc/grpc-go/tree/master/examples/features/interceptor). A video tutorial [here](https://www.youtube.com/watch?v=kVpB-uH6X-s) where we have a server interceptor authenticate users with JWT and authorize access by roles and the client interceptor to login user and attach jwt token to the request before calling the actual grpc api.
+- [https://github.com/grpc/grpc-go](https://github.com/grpc/grpc-go)
 
 ## Go Read File articles
 
