@@ -2,6 +2,10 @@
 
 The purpose of this project is to learn gRPC protocols like Unary gRPC, Server Streaming, Client Streaming, and Bidirectional (combination of client and server streaming). I also learned how to follow the Hexagonal Architecture to arrange our gRPC server files.
 
+To run client, from the root dir, run `go run client/main.go -t Jogging` the -t flag is allows you to save a task directly to your server
+
+To start the server, from the root dir and run `go run server/main.go`
+
 ## Unary RPC
 
 This is a mode of communication where the client makes a request to the server, then that server might make another rpc request to another service and then response with a result. We do see this in action with the `CreateTodo` and `ReadTodos` RPC for the `TodoService`

@@ -14,16 +14,15 @@ import (
 	api "github.com/okpalaChidiebere/go-grpc/api"
 	todosservice "github.com/okpalaChidiebere/go-grpc/businessLogic/todos"
 	todosrepo "github.com/okpalaChidiebere/go-grpc/dataLayer/todos"
-	pb "github.com/okpalaChidiebere/go-grpc/pb"
 )
 
 var (
 	port = flag.Int("port", 9000, "The server port")
 )
 
-type Server struct {
-	Todo  pb.TodoServiceServer
-}
+// type Server struct {
+// 	Todo  pb.TodoServiceServer
+// }
 
 func loadTLSCredentials(certFile, keyFile string) (credentials.TransportCredentials, error) {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
@@ -59,11 +58,11 @@ func main(){
 	}
 	grpcServer := grpc.NewServer(grpc.Creds(creds))
 
-	s := Server{
-		Todo: api.NewTodoServer(todosService),
+	s := api.Servers{
+		TodoServer: api.NewTodoServer(todosService),
 	}
-	pb.RegisterTodoServiceServer(grpcServer, s.Todo)
-		lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	s.RegisterAllService(grpcServer)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
